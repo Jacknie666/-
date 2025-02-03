@@ -1,0 +1,37 @@
+#1.拿到contId
+#2.拿到videoStadus返回的json，得到scrURL
+#3.scrURl里面的内容修正
+#4.下载视频
+
+import requests
+
+
+
+url = 'https://www.pearvideo.com/video_1798183'
+
+headers = {
+    'user-agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    #防盗链referer:溯源，请求的上一级
+    'referer':url
+}
+
+conId = url.split('_')[1]
+
+videoStatus = f'https://www.pearvideo.com/videoStatus.jsp?contId={conId}&mrd=0.605878613508571'
+
+response = requests.get(url=videoStatus,headers=headers)
+
+#爬取的url：https://video.pearvideo.com/mp4/short/20250131/1738577382202-16044545-hd.mp4
+#实际的url：https://video.pearvideo.com/mp4/short/20250131/cont-1798183-16044545-hd.mp4
+#          https://video.pearvideo.com/mp4/short/20250131/cont-1798183-16044545-hd.mp4
+
+dic = response.json()
+srcUrl = dic['videoInfo']['videos']['srcUrl']
+systemTime = dic['systemTime']
+
+srcUrl = srcUrl.replace(systemTime,f'cont-{conId}')
+
+#下载视频
+
+with open('梨视频.mp4',mode='wb') as f:
+    f.write(requests.get(srcUrl).content)
